@@ -15,10 +15,12 @@ class Screen:
         self.col = col
 
     def refresh(self):
-        os.write(self.fd, b"\x1b[2J")
+        os.write(self.fd, b"\033[0;0H")
+        # os.write(self.fd, b"\x1b[2J")
 
     def hide_cursor(self):
-        os.write(self.fd, b"\e[?25l")
+        os.system("tput civis")
+        # os.write(self.fd, b"\e[?25l")
 
     def update_buffer(self, src):
         np.copyto(self.buf, src)
@@ -42,6 +44,7 @@ def initialize_term():
     new[3] &= ~(termios.ECHO | termios.ICANON)
     new[1] &= ~(termios.OPOST)
     termios.tcsetattr(fd, termios.TCSAFLUSH, new)
+    os.system("clear")
     return old
 
 
@@ -81,13 +84,15 @@ class Game:
     def run(self):
         try:
             old = initialize_term()
+            self.screen.hide_cursor()
             while True:
                 # process_input()
                 self.tick()
                 self.draw()
-                sleep(1)
+                sleep(1 / 60)
         finally:
             termios.tcsetattr(sys.stdin.fileno(), termios.TCSAFLUSH, old)
+            os.system("tput cvvis")
 
 
 if __name__ == "__main__":
