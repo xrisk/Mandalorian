@@ -90,6 +90,8 @@ class Game:
                 self.tick()
                 self.draw()
                 sleep(1 / 60)
+        except KeyboardInterrupt:
+            pass
         finally:
             termios.tcsetattr(sys.stdin.fileno(), termios.TCSAFLUSH, old)
             os.system("tput cvvis")
