@@ -1,102 +1,97 @@
-import termios
 import sys
-import os
 import numpy as np
 from time import sleep
 
-c = 0
+from screen import Screen
+from mando import Mando
+from entity import Entity
+
+import threading
+
+import time
+import os
+
+last_char = b""
+lock = threading.Lock()
 
 
-class Screen:
-    def __init__(self, row=25, col=80):
-        self.fd = sys.stdout.fileno()
-        self.buf = np.zeros(shape=(row, col), dtype=bytes)
-        self.row = row
-        self.col = col
-
-    def refresh(self):
-        os.write(self.fd, b"\033[0;0H")
-        # os.write(self.fd, b"\x1b[2J")
-
-    def hide_cursor(self):
-        os.system("tput civis")
-        # os.write(self.fd, b"\e[?25l")
-
-    def update_buffer(self, src):
-        np.copyto(self.buf, src)
-
-    def render(self):
-        # os.write(self.fd, b"\x1b[2J") # clear screen
-        self.refresh()
-        buf = bytearray()
-        buf.extend(b"\x1b[H")  # cursor on top left
-        for row in range(self.row):
-            for col in range(self.col):
-                buf.extend(self.buf[row][col])
-            buf.extend(b"\r\n")
-        os.write(self.fd, buf)
-
-
-def initialize_term():
+def getchar():
+    global last_char
+    last = None
     fd = sys.stdin.fileno()
-    old = termios.tcgetattr(fd)
-    new = termios.tcgetattr(fd)
-    new[3] &= ~(termios.ECHO | termios.ICANON)
-    new[1] &= ~(termios.OPOST)
-    termios.tcsetattr(fd, termios.TCSAFLUSH, new)
-    os.system("clear")
-    return old
+    while True:
+        # sleep(0.1)
+        char = os.read(fd, 1)
+        if char:
+            with lock:
+                last_char = char
+                last = time.time()
+        elif not last or time.time() - last > 0.25:
+            with lock:
+                last_char = b""
 
 
-def read_byte():
-    return os.read(sys.stdin.fileno(), 1)
-
-
-def process_input():
-    pass
+# def getchar():
+#     while True:
+#         char = sys.stdin.read(1)
+#         if char:
+#             print(char)
 
 
 class Game:
-    def __init__(self, row=25, col=80):
+    def __init__(self, row=25, col=120):
         self.screen = Screen(row, col)
         self.row = row
         self.col = col
         self.buf = np.zeros(shape=(row, col), dtype=bytes)
+        self.scene = []
+        self.ticks = 0
+        self.input = b""
+        self.input_time = 0
 
-        self.buf.fill(b"\\")
-        self.c = 0
+    def process_input(self):
+        with lock:
+            tmp = last_char
+        self.input = tmp
+
+    # char = sys.stdin.read(1)
+    # self.input = char
+    # self.input_time = self.ticks
+
+    def add_entity(self, e):
+        self.scene.append(e)
 
     def tick(self):
-        # if self.buf[0][0] == "-":
-        #     self.buf.fill(b"/")
-        # else:
-        #     self.buf.fill(b"-")
-        self.c += 1
-        if self.c % 2 == 0:
-            self.buf.fill(b"/")
-        else:
-            self.buf.fill(b"\\")
+        self.ticks += 1
+        for entity in self.scene:
+            entity.tick()
 
     def draw(self):
-        self.screen.update_buffer(self.buf)
-        self.screen.render()
+        self.buf.fill(b" ")
+        for entity in self.scene:
+            entity.render(self.buf)
+        self.screen.render(self.buf)
+
+    def init_scene(self):
+        self.add_entity(Mando(0, 0, g))
 
     def run(self):
         try:
-            old = initialize_term()
-            self.screen.hide_cursor()
+            self.screen.initialize()
+            self.init_scene()
             while True:
-                # process_input()
+                self.process_input()
                 self.tick()
+                # print("here")
                 self.draw()
-                sleep(1 / 60)
-        except KeyboardInterrupt:
-            pass
+                sleep(1 / 30)
+        except KeyboardInterrupt as ex:
+            print(ex)
         finally:
-            termios.tcsetattr(sys.stdin.fileno(), termios.TCSAFLUSH, old)
-            os.system("tput cvvis")
+            self.screen.restore()
 
 
 if __name__ == "__main__":
+    threading.Thread(target=getchar, daemon=True).start()
     g = Game()
     g.run()
