@@ -23,7 +23,8 @@ To exit, press `<Ctrl-C>`
 
 ## Cool features
 
-I calculate the actual fps and compare it to the expected fps. Quite a stark difference is observable, implying that my code is not very efficient :P
+- I calculate the actual fps and compare it to the expected fps. Quite a stark difference is observable, implying that my code is not very efficient :P
+- I wrote the input reading code from scratch, as I was not satisfied with the existing solutions (input lag + spurious blank reads). I use a separate thread along with a mutex for continuosly reading input, ensuring there is no delay.
 
 ## Game architecture overview
 
