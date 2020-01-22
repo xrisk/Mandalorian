@@ -25,7 +25,13 @@ lock = threading.Lock()
 
 
 def getchar():
-    whitelist = b"wadq"
+    # w -> up
+    # a -> left
+    # d -> right
+    # q -> shoot
+    # b -> boost
+    # <space> -> shield
+    whitelist = b"wadqb "
     global last_char
     last = None
     fd = sys.stdin.fileno()
@@ -54,6 +60,10 @@ class Game:
         self.backing = defaultdict(list)
         self.score = 0
         self.total_time = 120
+        self.last_shield_time = None
+        self.shield_cooldown = 60
+        self.fps = 30
+        self.actual_fps = 0
 
     def process_input(self):
         with lock:
@@ -111,10 +121,16 @@ class Game:
         assert t >= 0
         return int(self.total_time - t)
 
+    def get_shield_cooldown(self):
+        if not self.last_shield_time:
+            return 0
+        t = round(time.time() - self.last_shield_time)
+        return max(0, self.shield_cooldown - t)
+
     def generate_banner(self):
         t = max(0, self.get_time_left())
         assert t <= 120
-        banner = f"Score: {self.score} Lives: {self.mando.lives} Time Left: {t} Shield Cooldown: {60}"
+        banner = f"Score: {self.score} | Lives: {self.mando.lives} | Time Left: {t} | Shield Cooldown: {self.get_shield_cooldown()} | FPS: {self.fps} | Actual FPS: {self.actual_fps} |"
         return banner
 
     def should_terminate(self):
@@ -124,20 +140,24 @@ class Game:
         self.l = 0
         self.r = self.l + 120
         self.game_start_time = time.time()
+        frame_ctr = 0
         try:
             self.screen.initialize()
             self.init_scene()
+            last = time.time()
             while not self.should_terminate():
                 # print(self.l, self.mando.lives, self.input)
                 self.process_input()
                 self.tick()
                 # print("here")
                 self.draw(self.l, self.r, self.generate_banner())
-                sleep(1 / 30)
-
                 if self.ticks % 5 == 0:
                     self.l = min(self.l + 1, self.col - 120)
                     self.r = min(self.r + 1, self.col)
+                sleep(1 / self.fps)
+                t = time.time()
+                self.actual_fps = round(1 / (t - last))
+                last = t
         except KeyboardInterrupt as ex:
             print(ex)
         finally:

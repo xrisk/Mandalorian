@@ -9,6 +9,7 @@ from beam import Beam
 from bullet import Bullet
 from magnet import Magnet
 from dragon import Dragon
+from colorama import Fore
 
 
 def constrain(val, low, hi):
@@ -26,7 +27,19 @@ class Mando(entity.Entity):
             texture = f.readlines()
 
         texture = [list(s.strip("\r\n")) for s in texture]
-        self.rep = np.array(texture)
+
+        self.noshield_texture = np.array(texture)
+        self.rep = self.noshield_texture
+
+        yellow = []
+        for line in texture:
+            tmp = []
+            for ch in line:
+                tmp.append(Fore.YELLOW + ch + Fore.RESET)
+            yellow.append(tmp)
+
+        self.shield_texture = yellow
+
         self.h = len(self.rep)
         self.w = len(self.rep[0])
 
@@ -41,6 +54,7 @@ class Mando(entity.Entity):
         self.gravity = -self.ax / 1.1
         self.last_bullet = None
         self.lives = 3
+        self.shield = False
 
     def idk(self):
         self.x = round(self.real_x)
@@ -76,6 +90,9 @@ class Mando(entity.Entity):
         return False
 
     def tick(self, buf):
+
+        if self.shield and time.time() - self.shield_start_time >= 10:
+            self.shield = False
 
         if self.real_y < self.g.l:
             self.real_y = self.g.l
@@ -131,6 +148,17 @@ class Mando(entity.Entity):
             if not self.last_bullet or time.time() - self.last_bullet > 1:
                 self.last_bullet = time.time()
                 self.g.add_entity(Bullet(self.x, self.y, self.g))
+        elif self.g.input == b" ":
+            if (
+                not self.g.last_shield_time
+                or time.time() - self.g.last_shield_time
+                >= self.g.shield_cooldown
+            ):
+                self.shield_start_time = time.time()
+                self.g.last_shield_time = time.time()
+                self.shield = True
+        elif self.g.input == b"b":
+            self.g.fps = 200
 
         self.vx = constrain(self.vx, -2, 2)
 
@@ -154,10 +182,16 @@ class Mando(entity.Entity):
         self.vx = 0
 
     def decrement_life(self):
-        self.lives -= 1
-        if self.lives <= 0:
-            self.g.is_running = False
+        if not self.shield:
+            self.lives -= 1
+            if self.lives <= 0:
+                self.g.is_running = False
 
     def render(self, buf):
         self.idk()
-        super().render(buf)
+        if self.shield:
+            self.rep = self.shield_texture
+            super().render(buf)
+        else:
+            self.rep = self.noshield_texture
+            super().render(buf)

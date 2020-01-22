@@ -22,7 +22,7 @@ class Dragon(entity.Entity):
             self.rep = np.array([list(s[:-1]) for s in f.readlines()])
         self.h = len(self.rep)
         self.w = len(self.rep[0])
-        self.life = 1
+        self.life = 3
         self.last_snowball = None
 
     def decrement_life(self):
