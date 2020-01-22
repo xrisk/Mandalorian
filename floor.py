@@ -1,4 +1,5 @@
 import entity
+from colorama import Fore
 
 
 class Floor(entity.Entity):
@@ -19,6 +20,6 @@ class Sky(entity.Entity):
 
     def render(self, buf):
         for col in range(self.g.col):
-            for k in range(3):
-                buf[k][col] = "#"
+            for k in range(2):
+                buf[k][col] = Fore.BLUE + "~" + Fore.RESET
                 self.g.backing[(k, col)].append(self)

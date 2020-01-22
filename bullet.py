@@ -7,13 +7,17 @@ from beam import Beam
 
 class Bullet(entity.Entity):
 
-    vy = 2
-    w = 2
-    h = 1
-    rep = np.array([["=", ">"]])
+    # vy = 2
+    # w = 2
+    # h = 1
+    # rep = np.array([["=", ">"]])
 
     def __init__(self, *args):
         super().__init__(*args)
+        self.rep = np.array([["=", ">"]])
+        self.h = 1
+        self.w = 2
+        self.vy = 2
 
     def check_collision(self):
         if self.x < 0 or self.x + self.h >= self.g.row:

@@ -10,6 +10,7 @@ from coin import Coin
 from collections import defaultdict
 from beam import Beam
 from magnet import Magnet
+from dragon import Dragon
 
 import threading
 import colorama
@@ -41,7 +42,7 @@ def getchar():
 
 
 class Game:
-    def __init__(self, row=25, col=500):
+    def __init__(self, row=38, col=500):
         self.screen = Screen(row, col)
         self.row = row
         self.col = col
@@ -95,6 +96,7 @@ class Game:
         self.generate_beams()
         self.generate_coins()
         self.add_entity(Magnet(5, 50, g))
+        self.add_entity(Dragon(10, 450, g))
         self.mando = Mando(10, 0, g)
         self.add_entity(self.mando)
 
