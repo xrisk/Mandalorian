@@ -47,3 +47,8 @@ class Bullet(entity.Entity):
             return
         self.y += self.vy
         self.check_collision()
+
+
+def Snowball(Bullet):
+    def __init__(self, *args):
+        super().__init__(*args)

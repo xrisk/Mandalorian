@@ -8,6 +8,7 @@ from coin import Coin
 from beam import Beam
 from bullet import Bullet
 from magnet import Magnet
+from dragon import Dragon
 
 
 def constrain(val, low, hi):
@@ -20,14 +21,18 @@ def constrain(val, low, hi):
 
 
 class Mando(entity.Entity):
-    rep = np.zeros(shape=(3, 3), dtype=object)
-    rep.fill("X")
-    h = 3
-    w = 3
-    lives = 3
+    def read_sprite(self):
+        with open("ufo.txt") as f:
+            texture = f.readlines()
+
+        texture = [list(s.strip("\r\n")) for s in texture]
+        self.rep = np.array(texture)
+        self.h = len(self.rep)
+        self.w = len(self.rep[0])
 
     def __init__(self, *args):
         super().__init__(*args)
+        self.read_sprite()
         self.vx = 0
         self.vy = 0
         self.real_x = self.x
@@ -35,6 +40,7 @@ class Mando(entity.Entity):
         self.ax = -0.03
         self.gravity = -self.ax / 1.1
         self.last_bullet = None
+        self.lives = 3
 
     def idk(self):
         self.x = round(self.real_x)
@@ -55,6 +61,7 @@ class Mando(entity.Entity):
                         isinstance(o, Floor)
                         or isinstance(o, Sky)
                         or isinstance(o, Magnet)
+                        or isinstance(o, Dragon)
                     ):
                         return True
                     elif isinstance(o, Beam):
