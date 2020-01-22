@@ -13,7 +13,7 @@ class Entity:
         self.show = True
         self.g = game
 
-    def tick(self):
+    def tick(self, buf):
         pass
 
     def show(self):
@@ -23,8 +23,14 @@ class Entity:
         self.show = False
 
     def render(self, buf):
-        if self.show:
-            buf[
-                self.x : self.x + self.h,  # noqa: E203
-                self.y : self.y + self.w,  # noqa: E203
-            ] = self.rep
+        try:
+            if self.show:
+                buf[
+                    self.x : self.x + self.h,  # noqa: E203
+                    self.y : self.y + self.w,  # noqa: E203
+                ] = self.rep
+                for i in range(self.x, self.x + self.h):
+                    for j in range(self.y, self.y + self.h):
+                        self.g.backing[(i, j)].append(self)
+        except:
+            pass

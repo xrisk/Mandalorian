@@ -40,17 +40,17 @@ class Screen:
         os.write(self.fd, b"\033[0;0H")
         # os.write(self.fd, b"\x1b[2J")
 
-    def render(self, buf):
+    def render(self, buf, l, r):
         # os.write(self.fd, b"\x1b[2J") # clear screen
         self.refresh()
         out = bytearray()
         out.extend(b"\x1b[H")  # cursor on top lef
         for row in range(self.row):
-            for col in range(self.col):
+            for col in range(l, r):
                 if buf[row][col] == b"":
                     out.extend(b" ")
                 else:
-                    out.extend(buf[row][col])
+                    out.extend(buf[row][col].encode("utf-8"))
             out.extend(b"\r\n")
         # sys.stdout.buffer.write(out)
         os.write(self.fd, out)
