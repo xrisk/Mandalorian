@@ -104,23 +104,30 @@ class Game:
             self.add_entity(Coin(r, c, self))
 
     def generate_beams(self):
-        for _ in range(30):
+        n_beam = 30
+        for _ in range(n_beam):
             r = randint(4, self.__row - 10)
             c = randint(50, self.__col - 10)
-            t = Beam(r, c, g)
+            t = Beam(r, c, self)
             t.set_orientation(choice(["vert", "horiz", "diag"]))
             t.render(self.__buf)
             self.add_entity(t)
 
+    def generate_magnets(self):
+        n_magnet = 5
+        for _ in range(n_magnet):
+            c = randint(50, self.__col - 50)
+            self.add_entity(Magnet(5, c, self))
+
     def init_scene(self):
-        self.add_entity(Sky(0, 0, g))
-        self.add_entity(Floor(0, 0, g))
+        self.add_entity(Sky(0, 0, self))
+        self.add_entity(Floor(0, 0, self))
         self.generate_beams()
         self.generate_coins()
-        self.add_entity(Magnet(5, 50, g))
-        self.add_entity(Dragon(10, 450, g))
+        self.generate_magnets()
+        self.add_entity(Dragon(10, 450, self))
 
-        self.__mando = Mando(10, 0, g)
+        self.__mando = Mando(10, 0, self)
         self.add_entity(self.__mando)
 
     def get_mando(self):
@@ -184,10 +191,8 @@ class Game:
             self.init_scene()
             last = time.time()
             while not self.should_terminate():
-                # print(self.l, self.mando.lives, self.input)
                 self.process_input()
                 self.tick()
-                # print("here")
                 self.draw(self.__l, self.__r, self.generate_banner())
                 if self.__ticks % 5 == 0:
                     self.__l = min(self.__l + 1, self.__col - 120)
