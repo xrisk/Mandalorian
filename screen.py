@@ -40,13 +40,13 @@ class Screen:
         os.write(self.fd, b"\033[0;0H")
         # os.write(self.fd, b"\x1b[2J")
 
-    def render(self, buf, l, r):
-
-        # os.write(self.fd, b"\x1b[2J")  # clear screen
+    def render(self, buf, l, r, banner):
         self.refresh()
 
         out = ""
         out = "\x1b[H"  # cursor on top lefth
+        out += Fore.BLUE + banner + " | " + Fore.RESET
+        out += "\r\n"
         for row in range(self.row):
             for col in range(l, r):
                 if buf[row][col] == "":

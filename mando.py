@@ -65,12 +65,13 @@ class Mando(entity.Entity):
                     ):
                         return True
                     elif isinstance(o, Beam):
-                        self.lives -= 1
+                        self.decrement_life()
                         o.hide()
                 # no collision with wall
                 # check for coin colls etc
                 for o in self.g.backing[(x, y)]:
                     if isinstance(o, Coin):
+                        self.g.increment_score(1)
                         o.hide()
         return False
 
@@ -92,10 +93,10 @@ class Mando(entity.Entity):
                         if o in attracted:
                             continue
                         if o.y < self.real_y:
-                            self.real_y -= 5 * 1 / abs(o.y - self.real_y)
+                            self.real_y -= 10 * 1 / abs(o.y - self.real_y)
                             attracted.add(o)
                         elif o.y > self.real_y:
-                            self.real_y += 5 * 1 / abs(o.y - self.real_y)
+                            self.real_y += 10 * 1 / abs(o.y - self.real_y)
                             attracted.add(o)
 
         attracted.clear()
@@ -107,10 +108,10 @@ class Mando(entity.Entity):
                         if o in attracted:
                             continue
                         if o.x < self.real_x:
-                            self.real_x -= 5 * 1 / abs(o.x - self.real_x)
+                            self.real_x -= 10 * 1 / abs(o.x - self.real_x)
                             attracted.add(o)
                         elif o.x > self.real_x:
-                            self.real_x += 5 * 1 / abs(o.x - self.real_x)
+                            self.real_x += 10 * 1 / abs(o.x - self.real_x)
 
         if self.g.input == b"w":
             self.vx += self.ax - self.gravity
@@ -151,6 +152,11 @@ class Mando(entity.Entity):
 
         # stoppedd
         self.vx = 0
+
+    def decrement_life(self):
+        self.lives -= 1
+        if self.lives <= 0:
+            self.g.is_running = False
 
     def render(self, buf):
         self.idk()

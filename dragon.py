@@ -2,6 +2,9 @@ import entity
 import numpy as np
 from colorama import Fore
 
+import bullet
+import time
+
 
 def constrain(val, lo, hi):
     if val < lo:
@@ -19,14 +22,23 @@ class Dragon(entity.Entity):
             self.rep = np.array([list(s[:-1]) for s in f.readlines()])
         self.h = len(self.rep)
         self.w = len(self.rep[0])
-        self.life = 7
+        self.life = 1
+        self.last_snowball = None
+
+    def decrement_life(self):
+        self.life -= 1
+        if self.life <= 0:
+            self.hide()
+            self.g.is_running = False
 
     def tick(self, buf):
-        if self.g.mando:
-            self.x = constrain(self.g.mando.x - 10, 3, 19)
-            # self.y = self.g.mando.y
+        if not self.last_snowball or time.time() - self.last_snowball > 2:
+            self.g.add_entity(bullet.Snowball(self.x + 9, self.y, self.g))
+            self.last_snowball = time.time()
 
     def render(self, buf):
+        if self.g.mando:
+            self.x = constrain(self.g.mando.x - 10, 3, 19)
         for i in range(self.h):
             for j in range(self.w):
                 buf[self.x + i][self.y + j] = (

@@ -43,6 +43,7 @@ def getchar():
 
 class Game:
     def __init__(self, row=38, col=500):
+        self.is_running = True
         self.screen = Screen(row, col)
         self.row = row
         self.col = col
@@ -51,6 +52,8 @@ class Game:
         self.ticks = 0
         self.input = b""
         self.backing = defaultdict(list)
+        self.score = 0
+        self.total_time = 120
 
     def process_input(self):
         with lock:
@@ -60,6 +63,9 @@ class Game:
     def add_entity(self, e):
         self.scene.append(e)
 
+    def increment_score(self, d):
+        self.score += d
+
     def tick(self):
         self.ticks += 1
         self.buf.fill(" ")
@@ -68,8 +74,8 @@ class Game:
             entity.tick(self.buf)
             entity.render(self.buf)
 
-    def draw(self, l, r):
-        self.screen.render(self.buf, l, r)
+    def draw(self, l, r, banner):
+        self.screen.render(self.buf, l, r, banner)
 
     def generate_coins(self):
         n_coin = 200
@@ -84,7 +90,7 @@ class Game:
     def generate_beams(self):
         for _ in range(30):
             r = randint(4, self.row - 10)
-            c = randint(0, self.col - 10)
+            c = randint(50, self.col - 10)
             t = Beam(r, c, g)
             t.set_orientation(choice(["vert", "horiz", "diag"]))
             t.render(self.buf)
@@ -100,19 +106,34 @@ class Game:
         self.mando = Mando(10, 0, g)
         self.add_entity(self.mando)
 
+    def get_time_left(self):
+        t = time.time() - self.game_start_time
+        assert t >= 0
+        return int(self.total_time - t)
+
+    def generate_banner(self):
+        t = max(0, self.get_time_left())
+        assert t <= 120
+        banner = f"Score: {self.score} Lives: {self.mando.lives} Time Left: {t} Shield Cooldown: {60}"
+        return banner
+
+    def should_terminate(self):
+        return self.get_time_left() <= 0 or not self.is_running
+
     def run(self):
         self.l = 0
         self.r = self.l + 120
+        self.game_start_time = time.time()
         try:
             self.screen.initialize()
             self.init_scene()
-            while True:
+            while not self.should_terminate():
                 # print(self.l, self.mando.lives, self.input)
                 self.process_input()
                 self.tick()
                 # print("here")
-                self.draw(self.l, self.r)
-                sleep(1 / 60)
+                self.draw(self.l, self.r, self.generate_banner())
+                sleep(1 / 30)
 
                 if self.ticks % 5 == 0:
                     self.l = min(self.l + 1, self.col - 120)
@@ -121,6 +142,8 @@ class Game:
             print(ex)
         finally:
             self.screen.restore()
+            os.system("clear")
+            print("Game Over!")
 
 
 if __name__ == "__main__":

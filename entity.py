@@ -21,8 +21,7 @@ class Entity:
         try:
             if self.show:
                 buf[
-                    self.x : self.x + self.h,  # noqa: E203
-                    self.y : self.y + self.w,  # noqa: E203
+                    self.x : self.x + self.h, self.y : self.y + self.w
                 ] = self.rep
                 for i in range(self.x, self.x + self.h):
                     for j in range(self.y, self.y + self.h):
