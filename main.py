@@ -142,7 +142,7 @@ class Game:
 
     def generate_banner(self):
         t = max(0, self.get_time_left())
-        assert t <= 120
+        # assert t <= 120
         banner = f"Score: {self.__score} | Lives: {self.__mando.get_lives()} | Time Left: {t} | Shield Cooldown: {self.get_shield_cooldown()} | FPS: {self.__fps} | Actual FPS: {self.__actual_fps} |"
         return banner
 
@@ -158,6 +158,10 @@ class Game:
     def get_right_col(self):
         return self.__r
 
+    def do_win(self):
+        self.__end_message = "You win!"
+        self.stop_running()
+
     def get_input(self):
         return self.__input
 
@@ -166,9 +170,6 @@ class Game:
 
     def set_last_shield_time(self, val):
         self.__last_shield_time = val
-
-    def get_shield_cooldown(self):
-        return self.__shield_cooldown
 
     def set_fps(self, val):
         self.__fps = val
@@ -195,12 +196,16 @@ class Game:
                 t = time.time()
                 self.__actual_fps = round(1 / (t - last))
                 last = t
+                print(self.get_shield_cooldown())
         except KeyboardInterrupt as ex:
             print(ex)
         finally:
             self.__screen.restore()
             os.system("clear")
-            print("Game Over!")
+            if self.__end_message:
+                print(self.__end_message)
+            else:
+                print("Game Over!")
 
 
 if __name__ == "__main__":

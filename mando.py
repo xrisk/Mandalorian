@@ -28,15 +28,19 @@ class Mando(entity.Entity):
 
         texture = [list(s.strip("\r\n")) for s in texture]
 
-        self.__noshield_texture = np.array(texture)
-        self._rep = self.__noshield_texture
-
         yellow = []
+        white = []
         for line in texture:
             tmp = []
+            tmp2 = []
             for ch in line:
                 tmp.append(Fore.YELLOW + ch + Fore.RESET)
+                tmp2.append(Fore.WHITE + ch + Fore.RESET)
             yellow.append(tmp)
+            white.append(tmp2)
+
+        self.__noshield_texture = white
+        self._rep = self.__noshield_texture
 
         self.__shield_texture = yellow
 
@@ -91,7 +95,7 @@ class Mando(entity.Entity):
                         self._g.increment_score(1)
                         o.hide()
         return False
-    
+
     def get_lives(self):
         return self.__lives
 

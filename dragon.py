@@ -29,7 +29,7 @@ class Dragon(entity.Entity):
         self.__life -= 1
         if self.__life <= 0:
             self.hide()
-            self._g.stop_running()
+            self._g.do_win()
 
     def tick(self, buf):
         if not self.__last_snowball or time.time() - self.__last_snowball > 2:
