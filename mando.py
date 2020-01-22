@@ -28,8 +28,8 @@ class Mando(entity.Entity):
 
         texture = [list(s.strip("\r\n")) for s in texture]
 
-        self.noshield_texture = np.array(texture)
-        self.rep = self.noshield_texture
+        self.__noshield_texture = np.array(texture)
+        self._rep = self.__noshield_texture
 
         yellow = []
         for line in texture:
@@ -38,38 +38,41 @@ class Mando(entity.Entity):
                 tmp.append(Fore.YELLOW + ch + Fore.RESET)
             yellow.append(tmp)
 
-        self.shield_texture = yellow
+        self.__shield_texture = yellow
 
-        self.h = len(self.rep)
-        self.w = len(self.rep[0])
+        self._h = len(self._rep)
+        self._w = len(self._rep[0])
 
     def __init__(self, *args):
         super().__init__(*args)
         self.read_sprite()
-        self.vx = 0
-        self.vy = 0
-        self.real_x = self.x
-        self.real_y = self.y
-        self.ax = -0.03
-        self.gravity = -self.ax / 1.1
-        self.last_bullet = None
-        self.lives = 3
-        self.shield = False
+        self.__vx = 0
+        self.__vy = 0
+        self.__real_x = self._x
+        self.__real_y = self._y
+        self.__ax = -0.03
+        self.__gravity = -self.__ax / 1.1
+        self.__last_bullet = None
+        self.__lives = 3
+        self.__shield = False
 
     def idk(self):
-        self.x = round(self.real_x)
-        self.y = round(self.real_y)
+        self._x = round(self.__real_x)
+        self._y = round(self.__real_y)
 
     def check_collision(self):
         self.idk()
-        if self.x < 0 or self.x + self.h >= self.g.row:
+        if self._x < 0 or self._x + self._h >= self._g.get_rows():
             return True
-        elif self.y < self.g.l or self.y + self.w >= self.g.r:
+        elif (
+            self._y < self._g.get_left_col()
+            or self._y + self._w >= self._g.get_right_col()
+        ):
             return True
-        for x in range(self.x, self.x + self.h):
-            for y in range(self.y, self.y + self.w):
-                for o in self.g.backing[(x, y)]:
-                    if not o.show:
+        for x in range(self._x, self._x + self._h):
+            for y in range(self._y, self._y + self._w):
+                for o in self._g._backing[(x, y)]:
+                    if not o.is_show():
                         continue
                     if (
                         isinstance(o, Floor)
@@ -83,115 +86,119 @@ class Mando(entity.Entity):
                         o.hide()
                 # no collision with wall
                 # check for coin colls etc
-                for o in self.g.backing[(x, y)]:
+                for o in self._g._backing[(x, y)]:
                     if isinstance(o, Coin):
-                        self.g.increment_score(1)
+                        self._g.increment_score(1)
                         o.hide()
         return False
+    
+    def get_lives(self):
+        return self.__lives
 
     def tick(self, buf):
 
-        if self.shield and time.time() - self.shield_start_time >= 10:
-            self.shield = False
+        if self.__shield and time.time() - self.__shield_start_time >= 10:
+            self.__shield = False
 
-        if self.real_y < self.g.l:
-            self.real_y = self.g.l
+        if self.__real_y < self._g.get_left_col():
+            self.__real_y = self._g.get_left_col()
 
-        lx, ly = self.real_x, self.real_y
+        lx, ly = self.__real_x, self.__real_y
 
         def rollback():
-            self.real_x, self.real_y = lx, ly
+            self.__real_x, self.__real_y = lx, ly
 
         attracted = set()
-        for x in range(self.x, self.x + self.h):
-            for i in range(self.g.l, self.g.r):
-                for o in self.g.backing[(x, i)]:
+        for x in range(self._x, self._x + self._h):
+            for i in range(self._g.get_left_col(), self._g.get_right_col()):
+                for o in self._g._backing[(x, i)]:
                     if isinstance(o, Magnet):
                         if o in attracted:
                             continue
-                        if o.y < self.real_y:
-                            self.real_y -= 10 * 1 / abs(o.y - self.real_y)
+                        if o._y < self.__real_y:
+                            self.__real_y -= 10 * 1 / abs(o._y - self.__real_y)
                             attracted.add(o)
-                        elif o.y > self.real_y:
-                            self.real_y += 10 * 1 / abs(o.y - self.real_y)
+                        elif o._y > self.__real_y:
+                            self.__real_y += 10 * 1 / abs(o._y - self.__real_y)
                             attracted.add(o)
 
         attracted.clear()
 
-        for y in range(self.y, self.y + self.w):
-            for i in range(0, self.g.row):
-                for o in self.g.backing[(i, y)]:
+        for y in range(self._y, self._y + self._w):
+            for i in range(0, self._g.get_rows()):
+                for o in self._g._backing[(i, y)]:
                     if isinstance(o, Magnet):
                         if o in attracted:
                             continue
-                        if o.x < self.real_x:
-                            self.real_x -= 10 * 1 / abs(o.x - self.real_x)
+                        if o._x < self.__real_x:
+                            self.__real_x -= 10 * 1 / abs(o._x - self.__real_x)
                             attracted.add(o)
-                        elif o.x > self.real_x:
-                            self.real_x += 10 * 1 / abs(o.x - self.real_x)
+                        elif o._x > self.__real_x:
+                            self.__real_x += 10 * 1 / abs(o._x - self.__real_x)
 
-        if self.g.input == b"w":
-            self.vx += self.ax - self.gravity
-            self.real_x += self.vx
-        elif self.g.input == b"a":
-            self.real_y -= 1
-            self.vx += self.gravity
-            self.real_x += self.vx
-        elif self.g.input == b"d":
-            self.real_y += 1
-            self.vx += self.gravity
-            self.real_x += self.vx
-        elif self.g.input == b"":
-            self.vx += self.gravity
-            self.real_x += self.vx
-        elif self.g.input == b"q":
-            if not self.last_bullet or time.time() - self.last_bullet > 1:
-                self.last_bullet = time.time()
-                self.g.add_entity(Bullet(self.x, self.y, self.g))
-        elif self.g.input == b" ":
+        inp = self._g.get_input()
+        if inp == b"w":
+            self.__vx += self.__ax - self.__gravity
+            self.__real_x += self.__vx
+        elif inp == b"a":
+            self.__real_y -= 1
+            self.__vx += self.__gravity
+            self.__real_x += self.__vx
+        elif inp == b"d":
+            self.__real_y += 1
+            self.__vx += self.__gravity
+            self.__real_x += self.__vx
+        elif inp == b"":
+            self.__vx += self.__gravity
+            self.__real_x += self.__vx
+        elif inp == b"q":
+            if not self.__last_bullet or time.time() - self.__last_bullet > 1:
+                self.__last_bullet = time.time()
+                self._g.add_entity(Bullet(self._x, self._y, self._g))
+        elif inp == b" ":
             if (
-                not self.g.last_shield_time
-                or time.time() - self.g.last_shield_time
-                >= self.g.shield_cooldown
+                not self._g.get_last_shield_time()
+                or time.time() - self._g.get_last_shield_time()
+                >= self._g.get_shield_cooldown()
             ):
-                self.shield_start_time = time.time()
-                self.g.last_shield_time = time.time()
-                self.shield = True
-        elif self.g.input == b"b":
-            self.g.fps = 200
+                self.__shield_start_time = time.time()
+                self._g.set_last_shield_time(time.time())
+                self.__shield = True
+        elif inp == b"b":
+            self._g.set_fps(200)
 
-        self.vx = constrain(self.vx, -2, 2)
+        self.__vx = constrain(self.__vx, -2, 2)
 
         if not self.check_collision():
             return
 
         rollback()
 
-        if self.g.input == b"d":
-            self.real_y += 1
+        if self._g.get_input() == b"d":
+            self.__real_y += 1
             if not self.check_collision():
                 return
-        elif self.g.input == b"a":
-            self.real_y -= 1
+        elif self._g.get_input() == b"a":
+            self.__real_y -= 1
             if not self.check_collision():
                 return
 
         rollback()
 
         # stoppedd
-        self.vx = 0
+        self.__vx = 0
 
     def decrement_life(self):
-        if not self.shield:
-            self.lives -= 1
-            if self.lives <= 0:
-                self.g.is_running = False
+        if not self.__shield:
+            self.__lives -= 1
+            if self.__lives <= 0:
+                self._g.stop_running()
 
     def render(self, buf):
         self.idk()
-        if self.shield:
-            self.rep = self.shield_texture
+        if self.__shield:
+            self._rep = self.__shield_texture
             super().render(buf)
         else:
-            self.rep = self.noshield_texture
+            self._rep = self.__noshield_texture
             super().render(buf)

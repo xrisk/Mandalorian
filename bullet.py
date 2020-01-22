@@ -10,33 +10,30 @@ import dragon
 
 
 class Bullet(entity.Entity):
-
-    # vy = 2
-    # w = 2
-    # h = 1
-    # rep = np.array([["=", ">"]])
-
     def __init__(self, *args):
         super().__init__(*args)
-        self.rep = np.array([["=", ">"]])
-        self.h = 1
-        self.w = 2
-        self.vy = 2
+        self._rep = np.array([["=", ">"]])
+        self._h = 1
+        self._w = 2
+        self._vy = 2
 
     def check_collision(self):
-        if self.x < 0 or self.x + self.h >= self.g.row:
+        if self._x < 0 or self._x + self._h >= self._g.get_rows():
             self.hide()
             return
-        elif self.y < self.g.l or self.y + self.w >= self.g.r:
+        elif (
+            self._y < self._g.get_left_col()
+            or self._y + self._w >= self._g.get_right_col()
+        ):
             self.hide()
             return
-        for x in range(self.x, self.x + self.h):
-            for y in range(self.y, self.y + self.w):
-                for o in self.g.backing[(x, y)]:
-                    if not o.show:
+        for x in range(self._x, self._x + self._h):
+            for y in range(self._y, self._y + self._w):
+                for o in self._g._backing[(x, y)]:
+                    if not o.is_show():
                         continue
                     elif isinstance(o, Beam):
-                        self.g.increment_score(5)
+                        self._g.increment_score(5)
                         o.hide()
                         self.hide()
                         return
@@ -49,36 +46,39 @@ class Bullet(entity.Entity):
         return False
 
     def tick(self, buf):
-        if not self.show:
+        if not self._show:
             return
-        self.y += self.vy
+        self._y += self._vy
         self.check_collision()
 
 
 class Snowball(Bullet):
     def __init__(self, *args):
         super().__init__(*args)
-        self.rep = [["*", "*"], ["*", "*"]]
-        self.h = 2
-        self.w = 2
+        self._rep = [["*", "*"], ["*", "*"]]
+        self._h = 2
+        self._w = 2
 
     def tick(self, buf):
-        if not self.show:
+        if not self._show:
             return
 
-        self.y -= self.vy
+        self._y -= self._vy
         self.check_collision()
 
     def check_collision(self):
-        if self.x < 0 or self.x + self.h >= self.g.row:
+        if self._x < 0 or self._x + self._h >= self._g.get_rows():
             self.hide()
             return
-        elif self.y < self.g.l or self.y + self.w >= self.g.r:
+        elif (
+            self._y < self._g.get_left_col()
+            or self._y + self._w >= self._g.get_right_col()
+        ):
             self.hide()
             return
-        for x in range(self.x, self.x + self.h):
-            for y in range(self.y, self.y + self.w):
-                for o in self.g.backing[(x, y)]:
+        for x in range(self._x, self._x + self._h):
+            for y in range(self._y, self._y + self._w):
+                for o in self._g._backing[(x, y)]:
                     if not o.show:
                         continue
                     if isinstance(o, Floor) or isinstance(o, Sky):

@@ -13,15 +13,15 @@ class Floor(entity.Entity):
 
         texture = [s[:-1] for s in texture]
 
-        row_count = self.g.row
-        for col in range(self.g.col):
+        row_count = self._g.get_rows()
+        for col in range(self._g.get_cols()):
             for k in range(row_count - 5, row_count):
                 buf[k][col] = (
                     Fore.MAGENTA
                     + texture[k - (row_count)][col % len(texture[0])]
                     + Fore.RESET
                 )
-                self.g.backing[(k, col)].append(self)
+                self._g._backing[(k, col)].append(self)
 
 
 class Sky(entity.Entity):
@@ -29,7 +29,7 @@ class Sky(entity.Entity):
         super().__init__(*args)
 
     def render(self, buf):
-        for col in range(self.g.col):
+        for col in range(self._g.get_cols()):
             for k in range(2):
                 buf[k][col] = Fore.BLUE + "~" + Fore.RESET
-                self.g.backing[(k, col)].append(self)
+                self._g._backing[(k, col)].append(self)

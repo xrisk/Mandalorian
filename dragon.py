@@ -19,29 +19,30 @@ class Dragon(entity.Entity):
     def __init__(self, *args):
         super().__init__(*args)
         with open("dragon.txt") as f:
-            self.rep = np.array([list(s[:-1]) for s in f.readlines()])
-        self.h = len(self.rep)
-        self.w = len(self.rep[0])
-        self.life = 3
-        self.last_snowball = None
+            self._rep = np.array([list(s[:-1]) for s in f.readlines()])
+        self._h = len(self._rep)
+        self._w = len(self._rep[0])
+        self.__life = 3
+        self.__last_snowball = None
 
     def decrement_life(self):
-        self.life -= 1
-        if self.life <= 0:
+        self.__life -= 1
+        if self.__life <= 0:
             self.hide()
-            self.g.is_running = False
+            self._g.stop_running()
 
     def tick(self, buf):
-        if not self.last_snowball or time.time() - self.last_snowball > 2:
-            self.g.add_entity(bullet.Snowball(self.x + 9, self.y, self.g))
-            self.last_snowball = time.time()
+        if not self.__last_snowball or time.time() - self.__last_snowball > 2:
+            self._g.add_entity(bullet.Snowball(self._x + 9, self._y, self._g))
+            self.__last_snowball = time.time()
 
     def render(self, buf):
-        if self.g.mando:
-            self.x = constrain(self.g.mando.x - 10, 3, 19)
-        for i in range(self.h):
-            for j in range(self.w):
-                buf[self.x + i][self.y + j] = (
-                    Fore.GREEN + self.rep[i][j] + Fore.RESET
+        mando = self._g.get_mando()
+        if mando:
+            self._x = constrain(mando.get_x() - 10, 3, 19)
+        for i in range(self._h):
+            for j in range(self._w):
+                buf[self._x + i][self._y + j] = (
+                    Fore.GREEN + self._rep[i][j] + Fore.RESET
                 )
-                self.g.backing[(self.x + i, self.y + j)].append(self)
+                self._g._backing[(self._x + i, self._y + j)].append(self)

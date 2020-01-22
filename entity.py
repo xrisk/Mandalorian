@@ -3,29 +3,37 @@ import numpy as np
 
 class Entity:
     def __init__(self, x, y, game):
-        self.x = x
-        self.y = y
-        self.show = True
-        self.g = game
+        self._x = x
+        self._y = y
+        self._show = True
+        self._g = game
 
     def tick(self, buf):
         pass
 
+    def get_x(self):
+        return self._x
+
+    def get_y(self):
+        return self._y
+
     def show(self):
-        self.show = True
+        self._show = True
 
     def hide(self):
-        self.show = False
+        self._show = False
+
+    def is_show(self):
+        return self._show
 
     def render(self, buf):
         try:
-            if self.show:
+            if self._show:
                 buf[
-                    self.x : self.x + self.h, self.y : self.y + self.w
-                ] = self.rep
-                for i in range(self.x, self.x + self.h):
-                    for j in range(self.y, self.y + self.h):
-                        self.g.backing[(i, j)].append(self)
+                    self._x : self._x + self._h, self._y : self._y + self._w
+                ] = self._rep
+                for i in range(self._x, self._x + self._h):
+                    for j in range(self._y, self._y + self._h):
+                        self._g._backing[(i, j)].append(self)
         except Exception as e:
             pass
-            print(e)

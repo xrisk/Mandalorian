@@ -10,9 +10,9 @@ class Coin(entity.Entity):
         pass
 
     def hide(self):
-        self.show = False
+        self._show = False
 
     def render(self, buf):
-        if self.show:
-            buf[self.x][self.y] = Fore.YELLOW + "$" + Fore.RESET
-            self.g.backing[(self.x, self.y)].append(self)
+        if self._show:
+            buf[self._x][self._y] = Fore.YELLOW + "$" + Fore.RESET
+            self._g._backing[(self._x, self._y)].append(self)
