@@ -64,6 +64,7 @@ class Game:
         self.__shield_cooldown = 60
         self.__fps = 30
         self.__actual_fps = 0
+        self.__end_message = "Game over!"
 
     def process_input(self):
         with lock:
@@ -201,7 +202,6 @@ class Game:
                 t = time.time()
                 self.__actual_fps = round(1 / (t - last))
                 last = t
-                print(self.get_shield_cooldown())
         except KeyboardInterrupt as ex:
             print(ex)
         finally:
