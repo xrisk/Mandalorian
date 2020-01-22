@@ -42,7 +42,7 @@ class Screen:
 
     def render(self, buf, l, r):
 
-        os.write(self.fd, b"\x1b[2J")  # clear screen
+        # os.write(self.fd, b"\x1b[2J")  # clear screen
         self.refresh()
 
         out = ""
