@@ -4,13 +4,15 @@ import sys
 import termios
 import fcntl
 
+from colorama import Fore
+
 
 def initialize_term():
     fd = sys.stdout.fileno()
     oldterm = termios.tcgetattr(fd)
     newattr = termios.tcgetattr(fd)
     newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
-    newattr[1] &= ~(termios.OPOST)
+    # newattr[1] &= ~(termios.OPOST)
     newattr[6][termios.VTIME] = 0
     newattr[6][termios.VMIN] = 0
     termios.tcsetattr(fd, termios.TCSADRAIN, newattr)
@@ -23,8 +25,6 @@ def initialize_term():
 class Screen:
     def __init__(self, row, col):
         self.fd = sys.stdout.fileno()
-        self.buf = np.zeros(shape=(row, col), dtype=bytes)
-        self.buf.fill(" ")
         self.row = row
         self.col = col
 
@@ -41,16 +41,18 @@ class Screen:
         # os.write(self.fd, b"\x1b[2J")
 
     def render(self, buf, l, r):
-        # os.write(self.fd, b"\x1b[2J") # clear screen
+
+        os.write(self.fd, b"\x1b[2J")  # clear screen
         self.refresh()
-        out = bytearray()
-        out.extend(b"\x1b[H")  # cursor on top lef
+
+        out = ""
+        out = "\x1b[H"  # cursor on top lefth
         for row in range(self.row):
             for col in range(l, r):
-                if buf[row][col] == b"":
-                    out.extend(b" ")
+                if buf[row][col] == "":
+                    out += " "
                 else:
-                    out.extend(buf[row][col].encode("utf-8"))
-            out.extend(b"\r\n")
+                    out += buf[row][col]
+            out += "\r\n"
         # sys.stdout.buffer.write(out)
-        os.write(self.fd, out)
+        print(out, flush=True)

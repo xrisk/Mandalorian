@@ -10,7 +10,7 @@ class Bullet(entity.Entity):
     vy = 2
     w = 2
     h = 1
-    rep = np.array([[b"=", b">"]])
+    rep = np.array([["=", ">"]])
 
     def __init__(self, *args):
         super().__init__(*args)

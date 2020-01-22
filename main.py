@@ -45,7 +45,7 @@ class Game:
         self.screen = Screen(row, col)
         self.row = row
         self.col = col
-        self.buf = np.zeros(shape=(row, col), dtype=str)
+        self.buf = np.zeros(shape=(row, col), dtype=object)
         self.scene = []
         self.ticks = 0
         self.input = b""
@@ -61,7 +61,7 @@ class Game:
 
     def tick(self):
         self.ticks += 1
-        self.buf.fill(b" ")
+        self.buf.fill(" ")
         self.backing.clear()
         for entity in self.scene:
             entity.tick(self.buf)
@@ -105,7 +105,7 @@ class Game:
             self.screen.initialize()
             self.init_scene()
             while True:
-                print(self.l, self.mando.lives, self.input)
+                # print(self.l, self.mando.lives, self.input)
                 self.process_input()
                 self.tick()
                 # print("here")

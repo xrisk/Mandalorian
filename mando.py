@@ -20,7 +20,7 @@ def constrain(val, low, hi):
 
 
 class Mando(entity.Entity):
-    rep = np.zeros(shape=(3, 3), dtype=str)
+    rep = np.zeros(shape=(3, 3), dtype=object)
     rep.fill("X")
     h = 3
     w = 3

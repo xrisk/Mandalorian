@@ -14,5 +14,5 @@ class Coin(entity.Entity):
 
     def render(self, buf):
         if self.show:
-            buf[self.x][self.y] = b"$"
+            buf[self.x][self.y] = "$"
             self.g.backing[(self.x, self.y)].append(self)

@@ -9,7 +9,7 @@ class Floor(entity.Entity):
         row_count = self.g.row
         for col in range(self.g.col):
             for k in range(row_count - 5, row_count):
-                buf[k][col] = b"-"
+                buf[k][col] = "-"
                 self.g.backing[(k, col)].append(self)
 
 
